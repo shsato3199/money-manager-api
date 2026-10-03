@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shsato.moneymanagerapi.fixedexpense.mapper.FixedExpenseMapper">
+
+    <!-- 固定費一覧取得 -->
+    <select id="findFixedExpenses"
+            resultType="com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseResponse">
+
+        SELECT
+        et.transaction_id AS id,
+        et.transaction_date AS transaction_date,
+        et.transaction_name AS name,
+        et.category_id AS category_id,
+        ec.category_name AS category_name,
+        et.payment_method_id AS payment_method_id,
+        pm.payment_method_name AS payment_method_name,
+        et.amount AS amount,
+        et.shop_name AS shop_name,
+        et.memo AS memo
+        FROM expense_transactions et
+        LEFT JOIN expense_categories ec
+        ON et.category_id = ec.category_id
+        LEFT JOIN payment_methods pm
+        ON et.payment_method_id = pm.payment_method_id
+        WHERE et.user_id = #{userId}
+        AND et.expense_type = 'FIXED'
+        ORDER BY et.transaction_date DESC
+
+    </select>
+
+</mapper>
