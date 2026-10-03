@@ -39,6 +39,14 @@ INSERT INTO payment_methods (
     true,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
+),(
+    1,
+    '楽天カード',
+    'CREDIT_CARD',
+    2,
+    true,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 );
 
 -- ============================================================
@@ -56,6 +64,13 @@ INSERT INTO expense_categories (
     1,
     '通信費',
     1,
+    true,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+),(
+    1,
+    '食費',
+    2,
     true,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
@@ -123,6 +138,19 @@ INSERT INTO expense_transactions (
     'スマホ料金',
     NULL,
     'テスト用支出明細',
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+),(
+    1,
+    '2026-10-02',
+    'VARIABLE',
+    2,
+    2,
+    NULL,
+    1200,
+    'スーパーで買い物',
+    'テストスーパー',
+    'テスト用変動費',
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 );
