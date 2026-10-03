@@ -4,13 +4,14 @@ import com.shsato.moneymanagerapi.expense.dto.ExpenseResponse;
 import com.shsato.moneymanagerapi.expense.service.ExpenseService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/expenses")
-// 支出情報（固定費・変動費）を取得・登録・更新・削除するAPIを提供するController。
+// 変動費情報を取得・登録・更新・削除するAPIを提供するController。
 public class ExpenseController {
 
     private final ExpenseService expenseService;
@@ -19,11 +20,14 @@ public class ExpenseController {
         this.expenseService = expenseService;
     }
 
-    // ログインユーザーの変動費支出一覧を取得する。
+    // ログインユーザーの指定年月の変動費支出一覧を取得する。
     @GetMapping
-    public List<ExpenseResponse> getExpenses() {
+    public List<ExpenseResponse> getExpenses(
+            @RequestParam int year,
+            @RequestParam int month) {
+
         // TODO: Googleログイン実装後はSessionからuserIdを取得する。
         Long userId = 1L;
-        return expenseService.getVariableExpenses(userId);
+        return expenseService.getVariableExpenses(userId, year, month);
     }
 }

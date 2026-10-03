@@ -4,6 +4,7 @@ import com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseResponse;
 import com.shsato.moneymanagerapi.fixedexpense.service.FixedExpenseService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -19,13 +20,15 @@ public class FixedExpenseController {
         this.fixedExpenseService = fixedExpenseService;
     }
 
-    // ログインユーザーの固定費支出一覧を取得する。
+    // ログインユーザーの指定年月の固定費支出一覧を取得する。
     @GetMapping
-    public List<FixedExpenseResponse> getFixedExpenses() {
+    public List<FixedExpenseResponse> getFixedExpenses(
+            @RequestParam int year,
+            @RequestParam int month) {
 
         // TODO: Googleログイン実装後はSessionからuserIdを取得する。
         Long userId = 1L;
 
-        return fixedExpenseService.getFixedExpenses(userId);
+        return fixedExpenseService.getFixedExpenses(userId, year, month);
     }
 }

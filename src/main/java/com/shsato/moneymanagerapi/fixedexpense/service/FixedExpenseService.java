@@ -4,6 +4,7 @@ import com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseResponse;
 import com.shsato.moneymanagerapi.fixedexpense.mapper.FixedExpenseMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -15,8 +16,22 @@ public class FixedExpenseService {
         this.fixedExpenseMapper = fixedExpenseMapper;
     }
 
-    // 固定費一覧取得
-    public List<FixedExpenseResponse> getFixedExpenses(Long userId) {
-        return fixedExpenseMapper.findFixedExpenses(userId);
+    // 指定年月の固定費一覧取得
+    public List<FixedExpenseResponse> getFixedExpenses(
+            Long userId,
+            int year,
+            int month) {
+
+        // 指定年月の月初日を取得する。
+        LocalDate startDate = LocalDate.of(year, month, 1);
+
+        // 翌月の月初日を取得する。
+        LocalDate endDate = startDate.plusMonths(1);
+
+        return fixedExpenseMapper.findFixedExpenses(
+                userId,
+                startDate,
+                endDate
+        );
     }
 }

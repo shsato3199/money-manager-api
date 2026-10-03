@@ -5,7 +5,7 @@
 
 <mapper namespace="com.shsato.moneymanagerapi.fixedexpense.mapper.FixedExpenseMapper">
 
-    <!-- 固定費一覧取得 -->
+    <!-- 指定期間の固定費一覧取得 -->
     <select id="findFixedExpenses"
             resultType="com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseResponse">
 
@@ -27,6 +27,8 @@
         ON et.payment_method_id = pm.payment_method_id
         WHERE et.user_id = #{userId}
         AND et.expense_type = 'FIXED'
+        AND et.transaction_date >= #{startDate}
+        AND et.transaction_date &lt; #{endDate}
         ORDER BY et.transaction_date DESC
 
     </select>
