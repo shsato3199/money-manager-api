@@ -34,5 +34,45 @@
             AND transaction_date &lt; #{endDate}
 
     </select>
+    <!-- 指定期間のカテゴリ別支出集計を取得する -->
+    <select id="findCategorySummary"
+            resultType="com.shsato.moneymanagerapi.summary.dto.CategorySummaryResponse">
 
+        SELECT
+            ec.category_id AS category_id,
+            ec.category_name AS name,
+            SUM(et.amount) AS amount
+        FROM expense_transactions et
+        INNER JOIN expense_categories ec
+           ON et.category_id = ec.category_id
+        WHERE et.user_id = #{userId}
+            AND et.transaction_date >= #{startDate}
+            AND et.transaction_date &lt; #{endDate}
+        GROUP BY
+            ec.category_id,
+            ec.category_name
+        ORDER BY
+            amount DESC
+    </select>
+
+    <!-- 指定期間の支払元別支出集計を取得する -->
+    <select id="findPaymentSummary"
+            resultType="com.shsato.moneymanagerapi.summary.dto.PaymentSummaryResponse">
+
+        SELECT
+            pm.payment_method_id AS payment_method_id,
+            pm.payment_method_name AS name,
+            SUM(et.amount) AS amount
+        FROM expense_transactions et
+        INNER JOIN payment_methods pm
+            ON et.payment_method_id = pm.payment_method_id
+        WHERE et.user_id = #{userId}
+            AND et.transaction_date >= #{startDate}
+            AND et.transaction_date &lt; #{endDate}
+        GROUP BY
+            pm.payment_method_id,
+            pm.payment_method_name
+        ORDER BY
+            amount DESC
+    </select>
 </mapper>
