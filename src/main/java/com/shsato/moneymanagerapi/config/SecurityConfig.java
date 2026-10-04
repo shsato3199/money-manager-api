@@ -19,24 +19,23 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-        // CORS設定を有効にする。
-        .cors(Customizer.withDefaults())
-        // URLごとのアクセス権限を設定する。
-        .authorizeHttpRequests(auth -> auth
-            // 開発中はフロントからAPIを直接呼べるように、/api/** の認証を不要にする。
-            // Googleログイン実装後は認証必須に変更する。
-            .requestMatchers("/api/**").permitAll()
-            // /api/** 以外へのアクセスはログインを必要とする。
-            .anyRequest().authenticated()
-        )
-        // 現在は動作確認用のフォームログインを使用する。
-        .formLogin(Customizer.withDefaults());
-        /*
-        // APIへのアクセスにはログインを必要とする。
-        .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-        // 現在は動作確認用のフォームログインを使用する。
-        .formLogin(Customizer.withDefaults());
-        */
+                // CORS設定を有効にする。
+                .cors(Customizer.withDefaults())
+                // NuxtなどのSPAからPOST・PUT・DELETEするためのCSRF設定。
+                // CSRFトークンをCookieへ保存し、
+                // フロントからX-XSRF-TOKENヘッダーで送信できるようにする。
+                .csrf(csrf -> csrf.spa())
+                // URLごとのアクセス権限を設定する。
+                .authorizeHttpRequests(auth -> auth
+                        // 開発中はフロントからAPIを直接呼べるように、/api/** の認証を不要にする。
+                        // Googleログイン実装後は認証必須に変更する。
+                        .requestMatchers("/api/**").permitAll()
+                        // /api/** 以外へのアクセスはログインを必要とする。
+                        .anyRequest().authenticated()
+                )
+                // 現在は動作確認用のフォームログインを使用する。
+                .formLogin(Customizer.withDefaults());
+
         return http.build();
     }
 
@@ -53,12 +52,9 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(List.of("*"));
         // Session Cookieを送受信できるようにする。
         configuration.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
         // すべてのパスに上記CORS設定を適用する。
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
 }
