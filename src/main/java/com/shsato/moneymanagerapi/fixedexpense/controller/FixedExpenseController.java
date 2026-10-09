@@ -1,11 +1,12 @@
 package com.shsato.moneymanagerapi.fixedexpense.controller;
 
+import com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseRequest;
 import com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseResponse;
+import com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseTemplateResponse;
 import com.shsato.moneymanagerapi.fixedexpense.service.FixedExpenseService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,5 +31,24 @@ public class FixedExpenseController {
         Long userId = 1L;
 
         return fixedExpenseService.getFixedExpenses(userId, year, month);
+    }
+    // 固定費設定一覧取得。
+    @GetMapping("/templates")
+    public List<FixedExpenseTemplateResponse> getFixedExpenseTemplates() {
+
+        Long userId = 1L;
+
+        return fixedExpenseService.getFixedExpenseTemplates(userId);
+    }
+    // ログインユーザーの固定費設定を登録する。
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createFixedExpense(
+            @RequestBody FixedExpenseRequest request) {
+
+        // TODO: Googleログイン実装後はSessionからuserIdを取得する。
+        Long userId = 1L;
+
+        fixedExpenseService.createFixedExpense(userId, request);
     }
 }
