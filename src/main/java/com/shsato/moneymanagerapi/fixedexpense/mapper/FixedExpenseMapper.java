@@ -19,9 +19,16 @@ public interface FixedExpenseMapper {
             @Param("endDate") LocalDate endDate
     );
 
-    // 固定費設定を登録する。
-    void insertFixedExpense(
+    // 固定費設定を登録し、採番された設定IDを返す。
+    Long insertFixedExpense(
             @Param("userId") Long userId,
             @Param("request") FixedExpenseRequest request
+    );
+
+    // 固定費設定をもとに指定日の固定費支出を登録する。
+    void insertFixedExpenseTransaction(
+            @Param("userId") Long userId,
+            @Param("fixedExpenseTemplateId") Long fixedExpenseTemplateId,
+            @Param("transactionDate") LocalDate transactionDate
     );
 }

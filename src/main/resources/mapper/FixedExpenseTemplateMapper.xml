@@ -31,5 +31,33 @@
         ORDER BY fet.fixed_expense_template_id ASC
 
     </select>
+    <!-- 自動生成対象の固定費設定一覧取得 -->
+    <select id="findAutoGenerateFixedExpenseTemplates"
+            resultType="com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseTemplateResponse">
 
+        SELECT
+            fet.fixed_expense_template_id AS id,
+            fet.fixed_expense_name AS fixed_expense_name,
+            fet.amount AS amount,
+            fet.category_id AS category_id,
+            ec.category_name AS category_name,
+            fet.payment_method_id AS payment_method_id,
+            pm.payment_method_name AS payment_method_name,
+            fet.payment_day AS payment_day,
+            fet.start_year_month AS start_year_month,
+            fet.end_year_month AS end_year_month,
+            fet.auto_generate AS auto_generate,
+            fet.memo AS memo
+        FROM fixed_expense_templates fet
+        LEFT JOIN expense_categories ec
+            ON fet.category_id = ec.category_id
+        LEFT JOIN payment_methods pm
+            ON fet.payment_method_id = pm.payment_method_id
+        WHERE fet.user_id = #{userId}
+            AND fet.is_active = TRUE
+            AND fet.auto_generate = TRUE
+            AND fet.start_year_month &lt;= #{currentYearMonth}
+        ORDER BY fet.fixed_expense_template_id ASC
+
+    </select>
 </mapper>

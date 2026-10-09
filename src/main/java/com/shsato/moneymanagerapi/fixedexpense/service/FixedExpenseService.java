@@ -2,8 +2,8 @@ package com.shsato.moneymanagerapi.fixedexpense.service;
 
 import com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseRequest;
 import com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseResponse;
-import com.shsato.moneymanagerapi.fixedexpense.mapper.FixedExpenseMapper;
 import com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseTemplateResponse;
+import com.shsato.moneymanagerapi.fixedexpense.mapper.FixedExpenseMapper;
 import com.shsato.moneymanagerapi.fixedexpense.mapper.FixedExpenseTemplateMapper;
 
 import org.springframework.http.HttpStatus;
@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class FixedExpenseService {
 
     private final FixedExpenseMapper fixedExpenseMapper;
     private final FixedExpenseTemplateMapper fixedExpenseTemplateMapper;
+
     public FixedExpenseService(
             FixedExpenseMapper fixedExpenseMapper,
             FixedExpenseTemplateMapper fixedExpenseTemplateMapper
@@ -138,7 +140,97 @@ public class FixedExpenseService {
             );
         }
 
-        // 固定費設定を登録する。
-        fixedExpenseMapper.insertFixedExpense(userId, request);
+        // 現在年月を日本時間で取得する。
+        YearMonth currentYearMonth = YearMonth.now(ZoneId.of("Asia/Tokyo"));
+
+        // 開始年月は当月から6か月後までを指定可能とする。
+        if (startYearMonth.isBefore(currentYearMonth)
+                || startYearMonth.isAfter(currentYearMonth.plusMonths(6))) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "開始年月は当月から6か月後までを指定してください。"
+            );
+        }
+
+        // 固定費設定を登録し、採番された固定費設定IDを取得する。
+        Long fixedExpenseTemplateId = fixedExpenseMapper.insertFixedExpense(
+                userId,
+                request
+        );
+
+        // 自動生成ON、かつ開始年月が当月の場合は当月分の固定費支出を登録する。
+        if (Boolean.TRUE.equals(request.autoGenerate())
+                && startYearMonth.equals(currentYearMonth)) {
+
+            // 支払日が存在しない月は、その月の末日を支払日とする。
+            int paymentDay = Math.min(
+                    request.paymentDay(),
+                    currentYearMonth.lengthOfMonth()
+            );
+
+            // 当月の固定費支払日を取得する。
+            LocalDate transactionDate = currentYearMonth.atDay(paymentDay);
+
+            // 当月分の固定費支出を登録する。
+            fixedExpenseMapper.insertFixedExpenseTransaction(
+                    userId,
+                    fixedExpenseTemplateId,
+                    transactionDate
+            );
+        }
     }
+
+    // 自動生成ONの固定費について、開始年月から当月までの未登録分を生成する。
+    @Transactional
+    public void generateFixedExpenses(Long userId) {
+
+        // 現在年月を日本時間で取得する。
+        YearMonth currentYearMonth = YearMonth.now(ZoneId.of("Asia/Tokyo"));
+        // 自動生成対象の固定費設定を取得する。
+        List<FixedExpenseTemplateResponse> templates =
+                fixedExpenseTemplateMapper.findAutoGenerateFixedExpenseTemplates(
+                        userId,
+                        currentYearMonth.toString()
+                );
+
+        for (FixedExpenseTemplateResponse template : templates) {
+
+            YearMonth startYearMonth = YearMonth.parse(template.getStartYearMonth());
+            YearMonth lastYearMonth = currentYearMonth;
+
+            // 終了年月が設定されている場合は終了年月までとする。
+            if (template.getEndYearMonth() != null
+                    && !template.getEndYearMonth().isBlank()) {
+
+                YearMonth endYearMonth = YearMonth.parse(template.getEndYearMonth());
+
+                if (endYearMonth.isBefore(lastYearMonth)) {
+                    lastYearMonth = endYearMonth;
+                }
+            }
+
+            // 開始年月から対象最終月まで順番に処理する。
+            for (YearMonth targetYearMonth = startYearMonth;
+                 !targetYearMonth.isAfter(lastYearMonth);
+                 targetYearMonth = targetYearMonth.plusMonths(1)) {
+
+                // 支払日が存在しない月は月末日を使用する。
+                int paymentDay = Math.min(
+                        template.getPaymentDay(),
+                        targetYearMonth.lengthOfMonth()
+                );
+
+                LocalDate transactionDate = targetYearMonth.atDay(paymentDay);
+
+                // 未登録の場合のみ固定費支出を生成する。
+                fixedExpenseMapper.insertFixedExpenseTransaction(
+                        userId,
+                        template.getId(),
+                        transactionDate
+                );
+            }
+        }
+    }
+
 }

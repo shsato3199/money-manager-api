@@ -51,4 +51,15 @@ public class FixedExpenseController {
 
         fixedExpenseService.createFixedExpense(userId, request);
     }
+    // 固定費の未生成月分を自動生成する。
+    @PostMapping("/generate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void generateFixedExpenses() {
+
+        // TODO: Googleログイン実装後はSessionからuserIdを取得する。
+        Long userId = 1L;
+
+        // 固定費の自動生成処理を実行する。
+        fixedExpenseService.generateFixedExpenses(userId);
+    }
 }

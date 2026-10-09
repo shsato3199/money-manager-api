@@ -33,7 +33,10 @@
 
     </select>
     <!-- 固定費設定登録 -->
-    <insert id="insertFixedExpense">
+    <select id="insertFixedExpense"
+            resultType="java.lang.Long"
+            affectData="true"
+            flushCache="true">
         INSERT INTO fixed_expense_templates (
             user_id,
             category_id,
@@ -64,5 +67,52 @@
             CURRENT_TIMESTAMP,
             CURRENT_TIMESTAMP
         )
+        RETURNING fixed_expense_template_id
+    </select>
+
+    <!-- 固定費設定から指定月の固定費支出を登録 -->
+
+    <insert id="insertFixedExpenseTransaction">
+        INSERT INTO expense_transactions (
+            user_id,
+            transaction_date,
+            expense_type,
+            category_id,
+            payment_method_id,
+            fixed_expense_template_id,
+            amount,
+            transaction_name,
+            shop_name,
+            memo,
+            created_at,
+            updated_at
+        )
+            SELECT
+            fet.user_id,
+            #{transactionDate},
+            'FIXED',
+            fet.category_id,
+            fet.payment_method_id,
+            fet.fixed_expense_template_id,
+            fet.amount,
+            fet.fixed_expense_name,
+            NULL,
+            fet.memo,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+        FROM fixed_expense_templates fet
+        WHERE fet.fixed_expense_template_id = #{fixedExpenseTemplateId}
+            AND fet.user_id = #{userId}
+            AND fet.is_active = TRUE
+            AND fet.auto_generate = TRUE
+            AND NOT EXISTS (
+                SELECT 1
+                FROM expense_transactions et
+                WHERE et.user_id = fet.user_id
+                    AND et.fixed_expense_template_id = fet.fixed_expense_template_id
+                    AND et.transaction_date >= DATE_TRUNC('month', CAST(#{transactionDate} AS DATE))
+                    AND et.transaction_date &lt; DATE_TRUNC('month', CAST(#{transactionDate} AS DATE)) + INTERVAL '1 month'
+            )
+        ON CONFLICT DO NOTHING
     </insert>
 </mapper>
