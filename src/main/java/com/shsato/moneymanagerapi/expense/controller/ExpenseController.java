@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import org.springframework.http.HttpStatus;
 
@@ -48,5 +50,17 @@ public class ExpenseController {
         // TODO: Googleログイン実装後はSessionからuserIdを取得する。
         Long userId = 1L;
         expenseService.createVariableExpense(userId, request);
+    }
+
+    // ログインユーザーの指定した変動費を更新する。
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateExpense(
+            @PathVariable Long id,
+            @RequestBody ExpenseRequest request) {
+
+        // TODO: Googleログイン実装後はSessionからuserIdを取得する。
+        Long userId = 1L;
+        expenseService.updateVariableExpense(userId, id, request);
     }
 }

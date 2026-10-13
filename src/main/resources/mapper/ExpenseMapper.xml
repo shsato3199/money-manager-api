@@ -32,5 +32,23 @@
         ORDER BY et.transaction_date DESC
 
     </select>
+    <!-- 指定した変動費を更新する -->
+    <update id="updateVariableExpense">
 
+        UPDATE
+            expense_transactions
+        SET
+            transaction_date = #{transactionDate},
+            category_id = #{categoryId},
+            payment_method_id = #{paymentMethodId},
+            amount = #{amount},
+            transaction_name = #{name},
+            shop_name = #{shopName},
+            memo = #{memo},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE transaction_id = #{id}
+            AND user_id = #{userId}
+            AND expense_type = 'VARIABLE'
+
+    </update>
 </mapper>

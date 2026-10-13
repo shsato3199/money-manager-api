@@ -7,6 +7,8 @@ import com.shsato.moneymanagerapi.expense.mapper.ExpenseMapper;
 import com.shsato.moneymanagerapi.expense.repository.ExpenseTransactionRepository;
 import org.springframework.stereotype.Service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,5 +60,30 @@ public class ExpenseService {
         expense.setCreatedAt(now);
         expense.setUpdatedAt(now);
         expenseTransactionRepository.save(expense);
+    }
+
+    // 指定した変動費を更新する。
+    public void updateVariableExpense(Long userId, Long id, ExpenseRequest request) {
+
+        // 指定した変動費を更新する。
+        int updatedCount = expenseMapper.updateVariableExpense(
+                userId,
+                id,
+                request.getTransactionDate(),
+                request.getCategoryId(),
+                request.getPaymentMethodId(),
+                request.getAmount(),
+                request.getName(),
+                request.getShopName(),
+                request.getMemo()
+        );
+
+        // 更新対象が存在しない場合は404を返す。
+        if (updatedCount == 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "更新対象の変動費が見つかりません。"
+            );
+        }
     }
 }
