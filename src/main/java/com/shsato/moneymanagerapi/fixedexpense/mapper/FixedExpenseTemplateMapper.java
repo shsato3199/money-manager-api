@@ -1,6 +1,7 @@
 package com.shsato.moneymanagerapi.fixedexpense.mapper;
 
 import com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseTemplateResponse;
+import com.shsato.moneymanagerapi.fixedexpense.dto.FixedExpenseRequest;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
@@ -17,5 +18,21 @@ public interface FixedExpenseTemplateMapper {
     List<FixedExpenseTemplateResponse> findAutoGenerateFixedExpenseTemplates(
             @Param("userId") Long userId,
             @Param("currentYearMonth") String currentYearMonth
+    );
+    // 指定ユーザーの有効な固定費設定を1件取得する。
+    FixedExpenseTemplateResponse findActiveFixedExpenseTemplateById(
+            @Param("userId") Long userId,
+            @Param("id") Long id
+    );
+    // 固定費設定を更新する。
+    int updateFixedExpenseTemplate(
+            @Param("userId") Long userId,
+            @Param("id") Long id,
+            @Param("request") FixedExpenseRequest request
+    );
+    // 固定費設定を論理削除する。
+    int deleteFixedExpenseTemplate(
+            @Param("userId") Long userId,
+            @Param("id") Long id
     );
 }

@@ -31,4 +31,20 @@ public interface FixedExpenseMapper {
             @Param("fixedExpenseTemplateId") Long fixedExpenseTemplateId,
             @Param("transactionDate") LocalDate transactionDate
     );
+
+    // 更新後の対象期間外となる生成済み固定費明細を削除する。
+    int deleteFixedExpenseTransactionsOutsideRange(
+            @Param("userId") Long userId,
+            @Param("fixedExpenseTemplateId") Long fixedExpenseTemplateId,
+            @Param("startYearMonth") String startYearMonth,
+            @Param("endYearMonth") String endYearMonth
+    );
+
+    // 当月以降の生成済み固定費明細を更新する。
+    int updateFixedExpenseTransactionsFromMonth(
+            @Param("userId") Long userId,
+            @Param("fixedExpenseTemplateId") Long fixedExpenseTemplateId,
+            @Param("currentMonthStart") LocalDate currentMonthStart,
+            @Param("request") FixedExpenseRequest request
+    );
 }

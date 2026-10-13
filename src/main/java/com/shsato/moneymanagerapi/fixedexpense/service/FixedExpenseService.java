@@ -55,6 +55,197 @@ public class FixedExpenseService {
 
         return fixedExpenseTemplateMapper.findFixedExpenseTemplates(userId);
     }
+    // 固定費設定を更新する。
+    @Transactional
+    public void updateFixedExpenseTemplate(
+            Long userId,
+            Long id,
+            FixedExpenseRequest request) {
+
+        // 更新対象の固定費設定を取得する。
+        FixedExpenseTemplateResponse existing =
+                fixedExpenseTemplateMapper.findActiveFixedExpenseTemplateById(
+                        userId,
+                        id
+                );
+
+        // 更新対象が存在しない場合は404を返す。
+        if (existing == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "固定費設定が見つかりません。"
+            );
+        }
+
+        // リクエストチェック。
+        if (request == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "リクエストが不正です。"
+            );
+        }
+
+        // 固定費名チェック。
+        if (request.fixedExpenseName() == null
+                || request.fixedExpenseName().isBlank()
+                || request.fixedExpenseName().trim().length() > 100) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "固定費名が不正です。"
+            );
+        }
+
+        // 金額チェック。
+        if (request.amount() == null || request.amount() <= 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "金額が不正です。"
+            );
+        }
+
+        // カテゴリ・支払元チェック。
+        if (request.categoryId() == null
+                || request.paymentMethodId() == null) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "カテゴリまたは支払元が未指定です。"
+            );
+        }
+
+        // 支払日チェック。
+        if (request.paymentDay() == null
+                || request.paymentDay() < 1
+                || request.paymentDay() > 31) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "支払日が不正です。"
+            );
+        }
+
+        // 自動生成フラグチェック。
+        if (request.autoGenerate() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "自動生成フラグが未指定です。"
+            );
+        }
+
+        // メモの文字数チェック。
+        if (request.memo() != null
+                && request.memo().length() > 500) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "メモは500文字以内で入力してください。"
+            );
+        }
+
+        // 開始年月・終了年月チェック。
+        YearMonth startYearMonth;
+        YearMonth endYearMonth = null;
+
+        try {
+            startYearMonth = YearMonth.parse(
+                    request.startYearMonth()
+            );
+
+            if (request.endYearMonth() != null
+                    && !request.endYearMonth().isBlank()) {
+
+                endYearMonth = YearMonth.parse(
+                        request.endYearMonth()
+                );
+            }
+
+        } catch (DateTimeParseException | NullPointerException error) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "年月の形式が不正です。"
+            );
+        }
+
+        // 終了年月が開始年月より前の場合はエラー。
+        if (endYearMonth != null
+                && endYearMonth.isBefore(startYearMonth)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "終了年月は開始年月以降を指定してください。"
+            );
+        }
+
+        // 自動生成OFFからONへの変更は禁止し、登録済みの自動生成設定は変更できない。
+        if (!existing.getAutoGenerate().equals(request.autoGenerate())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "自動生成の設定は変更できません。"
+            );
+        }
+        // 固定費設定を更新する。
+        int updatedCount =
+                fixedExpenseTemplateMapper.updateFixedExpenseTemplate(
+                        userId,
+                        id,
+                        request
+                );
+
+        if (updatedCount != 1) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "固定費設定が見つかりません。"
+            );
+        }
+
+        // 更新後の開始年月・終了年月から外れた生成済み明細を削除する。
+        fixedExpenseMapper.deleteFixedExpenseTransactionsOutsideRange(
+                userId,
+                id,
+                startYearMonth.toString(),
+                endYearMonth == null ? null : endYearMonth.toString()
+        );
+
+        // 現在年月を日本時間で取得する。
+        YearMonth currentYearMonth =
+                YearMonth.now(ZoneId.of("Asia/Tokyo"));
+
+        // 当月の月初日を取得する。
+        LocalDate currentMonthStart = currentYearMonth.atDay(1);
+
+        // 当月以降の生成済み明細を更新する。
+        fixedExpenseMapper.updateFixedExpenseTransactionsFromMonth(
+                userId,
+                id,
+                currentMonthStart,
+                request
+        );
+    }
+
+    // 固定費設定を論理削除する。
+    @Transactional
+    public void deleteFixedExpenseTemplate(
+            Long userId,
+            Long id) {
+
+        // 固定費設定を論理削除する。
+        int deletedCount =
+                fixedExpenseTemplateMapper.deleteFixedExpenseTemplate(
+                        userId,
+                        id
+                );
+
+        // 削除対象が存在しない場合は404を返す。
+        if (deletedCount != 1) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "固定費設定が見つかりません。"
+            );
+        }
+
+        // 生成済みの固定費明細は削除しない。
+    }
 
     // 固定費設定を登録する。
     @Transactional

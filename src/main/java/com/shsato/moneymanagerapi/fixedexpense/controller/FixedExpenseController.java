@@ -51,6 +51,37 @@ public class FixedExpenseController {
 
         fixedExpenseService.createFixedExpense(userId, request);
     }
+    // ログインユーザーの固定費設定を更新する。
+    @PutMapping("/templates/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateFixedExpenseTemplate(
+            @PathVariable Long id,
+            @RequestBody FixedExpenseRequest request) {
+
+        // TODO: Googleログイン実装後はSessionからuserIdを取得する。
+        Long userId = 1L;
+
+        fixedExpenseService.updateFixedExpenseTemplate(
+                userId,
+                id,
+                request
+        );
+    }
+
+    // ログインユーザーの固定費設定を論理削除する。
+    @DeleteMapping("/templates/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFixedExpenseTemplate(
+            @PathVariable Long id) {
+
+        // TODO: Googleログイン実装後はSessionからuserIdを取得する。
+        Long userId = 1L;
+
+        fixedExpenseService.deleteFixedExpenseTemplate(
+                userId,
+                id
+        );
+    }
     // 固定費の未生成月分を自動生成する。
     @PostMapping("/generate")
     @ResponseStatus(HttpStatus.NO_CONTENT)

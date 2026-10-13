@@ -115,4 +115,50 @@
             )
         ON CONFLICT DO NOTHING
     </insert>
+    <!-- 更新後の対象期間外となる生成済み固定費明細を削除 -->
+    <delete id="deleteFixedExpenseTransactionsOutsideRange">
+
+        DELETE FROM expense_transactions
+        WHERE user_id = #{userId}
+            AND fixed_expense_template_id = #{fixedExpenseTemplateId}
+            AND expense_type = 'FIXED'
+            AND (
+                TO_CHAR(transaction_date, 'YYYY-MM') &lt; #{startYearMonth}
+            <if test="endYearMonth != null and endYearMonth != ''">
+                OR TO_CHAR(transaction_date, 'YYYY-MM') &gt; #{endYearMonth}
+            </if>
+            )
+
+    </delete>
+    <!-- 当月以降の生成済み固定費明細を更新 -->
+    <update id="updateFixedExpenseTransactionsFromMonth">
+
+        UPDATE expense_transactions
+        SET
+            transaction_name = #{request.fixedExpenseName},
+            amount = #{request.amount},
+            category_id = #{request.categoryId},
+            payment_method_id = #{request.paymentMethodId},
+            memo = #{request.memo},
+            transaction_date = (
+                DATE_TRUNC('month', transaction_date)::date
+                + (
+                    LEAST(
+                        #{request.paymentDay},
+                        EXTRACT(
+                            DAY FROM (
+                                DATE_TRUNC('month', transaction_date)
+                                + INTERVAL '1 month - 1 day'
+                            )
+                        )::integer
+                    ) - 1
+                )
+            ),
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+            AND fixed_expense_template_id = #{fixedExpenseTemplateId}
+            AND expense_type = 'FIXED'
+            AND transaction_date &gt;= #{currentMonthStart}
+
+    </update>
 </mapper>
