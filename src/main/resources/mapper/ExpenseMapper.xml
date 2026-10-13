@@ -51,4 +51,13 @@
             AND expense_type = 'VARIABLE'
 
     </update>
+    <!-- 指定した変動費を物理削除する -->
+    <delete id="deleteVariableExpense">
+
+        DELETE FROM expense_transactions
+        WHERE transaction_id = #{id}
+        AND user_id = #{userId}
+        AND expense_type = 'VARIABLE'
+
+    </delete>
 </mapper>

@@ -86,4 +86,19 @@ public class ExpenseService {
             );
         }
     }
+
+    // 指定した変動費を物理削除する。
+    public void deleteVariableExpense(Long userId, Long id) {
+
+        // 削除処理を実行する。
+        int deletedCount = expenseMapper.deleteVariableExpense(userId, id);
+
+        // 削除対象が存在しない場合は404を返す。
+        if (deletedCount == 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "削除対象の変動費が見つかりません。"
+            );
+        }
+    }
 }

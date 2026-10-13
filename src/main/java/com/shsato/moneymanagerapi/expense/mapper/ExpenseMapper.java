@@ -29,4 +29,9 @@ public interface ExpenseMapper {
             @Param("shopName") String shopName,
             @Param("memo") String memo
     );
+    // 指定した変動費を物理削除する。
+    int deleteVariableExpense(
+            @Param("userId") Long userId,
+            @Param("id") Long id
+    );
 }

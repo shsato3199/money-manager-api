@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import org.springframework.http.HttpStatus;
 
@@ -62,5 +63,15 @@ public class ExpenseController {
         // TODO: Googleログイン実装後はSessionからuserIdを取得する。
         Long userId = 1L;
         expenseService.updateVariableExpense(userId, id, request);
+    }
+
+    // ログインユーザーの指定した変動費を削除する。
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteExpense(@PathVariable Long id) {
+
+        // TODO: Googleログイン実装後はSessionからuserIdを取得する。
+        Long userId = 1L;
+        expenseService.deleteVariableExpense(userId, id);
     }
 }
