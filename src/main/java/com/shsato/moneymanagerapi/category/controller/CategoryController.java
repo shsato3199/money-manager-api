@@ -38,4 +38,28 @@ public class CategoryController {
 
         return categoryService.createCategory(userId, request);
     }
+
+    // カテゴリ更新
+    @PutMapping("/{id}")
+    public CategoryResponse updateCategory(
+            @PathVariable Long id,
+            @RequestBody CategoryRequest request
+    ) {
+
+        // Googleログイン実装までは仮のユーザーIDを使用する。
+        Long userId = 1L;
+
+        return categoryService.updateCategory(userId, id, request);
+    }
+
+    // カテゴリ論理削除
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCategory(@PathVariable Long id) {
+
+        // Googleログイン実装までは仮のユーザーIDを使用する。
+        Long userId = 1L;
+
+        categoryService.deleteCategory(userId, id);
+    }
 }

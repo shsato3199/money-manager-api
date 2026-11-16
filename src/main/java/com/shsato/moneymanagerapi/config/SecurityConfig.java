@@ -8,6 +8,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import jakarta.servlet.DispatcherType;
 
 import java.util.List;
 
@@ -27,10 +28,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.spa())
                 // URLごとのアクセス権限を設定する。
                 .authorizeHttpRequests(auth -> auth
-                        // 開発中はフロントからAPIを直接呼べるように、/api/** の認証を不要にする。
+                        // Spring Bootのエラー処理への内部転送は認証不要にする。
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+
+                        // 開発中はAPIへのアクセスを許可する。
                         // Googleログイン実装後は認証必須に変更する。
                         .requestMatchers("/api/**").permitAll()
-                        // /api/** 以外へのアクセスはログインを必要とする。
+
+                        // その他のアクセスはログイン必須。
                         .anyRequest().authenticated()
                 )
                 // 現在は動作確認用のフォームログインを使用する。

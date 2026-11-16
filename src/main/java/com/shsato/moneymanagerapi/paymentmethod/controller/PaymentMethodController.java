@@ -39,4 +39,28 @@ public class PaymentMethodController {
 
         paymentMethodService.createPaymentMethod(userId, request);
     }
+
+    // 支払元更新。
+    @PutMapping("/{id}")
+    public PaymentMethodResponse updatePaymentMethod(
+            @PathVariable Long id,
+            @RequestBody PaymentMethodRequest request
+    ) {
+
+        // TODO: Googleログイン実装後はSessionからuserIdを取得する。
+        Long userId = 1L;
+
+        return paymentMethodService.updatePaymentMethod(userId, id, request);
+    }
+
+    // 支払元論理削除。
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePaymentMethod(@PathVariable Long id) {
+
+        // TODO: Googleログイン実装後はSessionからuserIdを取得する。
+        Long userId = 1L;
+
+        paymentMethodService.deletePaymentMethod(userId, id);
+    }
 }
